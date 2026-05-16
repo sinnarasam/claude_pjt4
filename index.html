@@ -4,7 +4,58 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>키보드 입력 테스트</title>
+<script>
+  // FOUC 방지: 스타일 적용 전에 테마 결정
+  (function () {
+    const saved = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = saved || (prefersDark ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', theme);
+  })();
+</script>
 <style>
+  :root {
+    --bg: #ffffff;
+    --text: #1a1a1a;
+    --text-muted: #888888;
+    --text-dim: #bbbbbb;
+    --panel-bg: #fafafa;
+    --panel-border: #ececec;
+    --key-bg: #ffffff;
+    --key-border: #e5e5e5;
+    --key-text: #333333;
+    --key-hover: #f5f5f5;
+    --key-shadow: rgba(0, 0, 0, 0.04);
+    --key-active-bg: #1a1a1a;
+    --key-active-text: #ffffff;
+    --btn-border: #e0e0e0;
+    --btn-text: #666666;
+    --btn-hover-bg: #f5f5f5;
+    --btn-hover-border: #cccccc;
+    --placeholder: #c0c0c0;
+  }
+
+  [data-theme="dark"] {
+    --bg: #141414;
+    --text: #e8e8e8;
+    --text-muted: #888888;
+    --text-dim: #555555;
+    --panel-bg: #1c1c1c;
+    --panel-border: #2a2a2a;
+    --key-bg: #222222;
+    --key-border: #2f2f2f;
+    --key-text: #e8e8e8;
+    --key-hover: #2a2a2a;
+    --key-shadow: rgba(0, 0, 0, 0.3);
+    --key-active-bg: #f5f5f5;
+    --key-active-text: #1a1a1a;
+    --btn-border: #2f2f2f;
+    --btn-text: #999999;
+    --btn-hover-bg: #252525;
+    --btn-hover-border: #444444;
+    --placeholder: #444444;
+  }
+
   * {
     box-sizing: border-box;
     margin: 0;
@@ -13,15 +64,48 @@
 
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans KR", sans-serif;
-    background: #ffffff;
-    color: #1a1a1a;
+    background: var(--bg);
+    color: var(--text);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
     padding: 40px 20px;
     user-select: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
+
+  .theme-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--key-bg);
+    border: 1px solid var(--key-border);
+    color: var(--key-text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+    box-shadow: 0 1px 2px var(--key-shadow);
+  }
+
+  .theme-toggle:hover {
+    background: var(--key-hover);
+    transform: scale(1.05);
+  }
+
+  .theme-toggle svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .theme-toggle .icon-moon { display: none; }
+  [data-theme="dark"] .theme-toggle .icon-sun { display: none; }
+  [data-theme="dark"] .theme-toggle .icon-moon { display: block; }
 
   h1 {
     font-size: 24px;
@@ -32,7 +116,7 @@
 
   .subtitle {
     font-size: 14px;
-    color: #888;
+    color: var(--text-muted);
     margin-bottom: 32px;
   }
 
@@ -40,20 +124,21 @@
     width: 100%;
     max-width: 920px;
     min-height: 80px;
-    background: #fafafa;
-    border: 1px solid #ececec;
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
     border-radius: 12px;
     padding: 20px 24px;
     margin-bottom: 12px;
     font-size: 18px;
     line-height: 1.5;
     word-break: break-all;
-    color: #333;
+    color: var(--text);
+    transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
   }
 
   .display:empty::before {
     content: "키를 눌러보세요...";
-    color: #c0c0c0;
+    color: var(--placeholder);
   }
 
   .info {
@@ -64,33 +149,34 @@
     align-items: center;
     margin-bottom: 24px;
     font-size: 13px;
-    color: #999;
+    color: var(--text-muted);
   }
 
   .clear-btn {
     background: none;
-    border: 1px solid #e0e0e0;
-    color: #666;
+    border: 1px solid var(--btn-border);
+    color: var(--btn-text);
     padding: 6px 14px;
     border-radius: 6px;
     font-size: 13px;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
   }
 
   .clear-btn:hover {
-    background: #f5f5f5;
-    border-color: #ccc;
+    background: var(--btn-hover-bg);
+    border-color: var(--btn-hover-border);
   }
 
   .keyboard {
-    background: #fafafa;
-    border: 1px solid #ececec;
+    background: var(--panel-bg);
+    border: 1px solid var(--panel-border);
     border-radius: 16px;
     padding: 16px;
     display: flex;
     flex-direction: column;
     gap: 6px;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
   }
 
   .row {
@@ -102,29 +188,29 @@
   .key {
     min-width: 44px;
     height: 44px;
-    background: #ffffff;
-    border: 1px solid #e5e5e5;
+    background: var(--key-bg);
+    border: 1px solid var(--key-border);
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 13px;
     font-weight: 500;
-    color: #333;
+    color: var(--key-text);
     cursor: pointer;
-    transition: all 0.08s ease;
+    transition: background-color 0.08s ease, border-color 0.08s ease, color 0.08s ease, transform 0.08s ease;
     padding: 0 10px;
-    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
+    box-shadow: 0 1px 0 var(--key-shadow);
   }
 
   .key:hover {
-    background: #f5f5f5;
+    background: var(--key-hover);
   }
 
   .key.active {
-    background: #1a1a1a;
-    color: #ffffff;
-    border-color: #1a1a1a;
+    background: var(--key-active-bg);
+    color: var(--key-active-text);
+    border-color: var(--key-active-bg);
     transform: translateY(1px);
     box-shadow: none;
   }
@@ -138,7 +224,7 @@
   .footer {
     margin-top: 24px;
     font-size: 12px;
-    color: #bbb;
+    color: var(--text-dim);
   }
 
   @media (max-width: 720px) {
@@ -153,10 +239,26 @@
     .key.wide-3 { min-width: 66px; }
     .key.wide-4 { min-width: 76px; }
     .key.space  { min-width: 200px; }
+    .theme-toggle {
+      top: 12px;
+      right: 12px;
+      width: 36px;
+      height: 36px;
+    }
   }
 </style>
 </head>
 <body>
+
+<button class="theme-toggle" id="themeToggle" aria-label="테마 전환" title="테마 전환">
+  <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="12" cy="12" r="4"></circle>
+    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+  </svg>
+  <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+  </svg>
+</button>
 
 <h1>키보드 입력 테스트</h1>
 <p class="subtitle">물리 키보드를 누르거나 화면의 키를 클릭해보세요.</p>
@@ -249,7 +351,7 @@
   const display = document.getElementById('display');
   const lastKeyEl = document.getElementById('lastKey');
   const clearBtn = document.getElementById('clearBtn');
-  const keyboard = document.getElementById('keyboard');
+  const themeToggle = document.getElementById('themeToggle');
   const allKeys = document.querySelectorAll('.key');
 
   function findKeyElement(key) {
@@ -280,8 +382,8 @@
   }
 
   function updateLastKey(key) {
-    const display = key === ' ' ? 'Space' : key;
-    lastKeyEl.textContent = `마지막 키: ${display}`;
+    const label = key === ' ' ? 'Space' : key;
+    lastKeyEl.textContent = `마지막 키: ${label}`;
   }
 
   document.addEventListener('keydown', (e) => {
@@ -313,6 +415,20 @@
   clearBtn.addEventListener('click', () => {
     display.textContent = '';
     lastKeyEl.textContent = '마지막 키: -';
+  });
+
+  themeToggle.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('theme', next);
+  });
+
+  // OS 테마 변경 감지 (사용자가 수동 선택하지 않은 경우에만 반응)
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    if (!localStorage.getItem('theme')) {
+      document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+    }
   });
 </script>
 
